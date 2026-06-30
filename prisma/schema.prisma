@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  STOCKIST
+}
+
+enum MovementType {
+  ENTRY
+  EXIT
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  passwordHash String      @map("password_hash")
+  role         UserRole    @default(STOCKIST)
+  active       Boolean     @default(true)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+  movements    StockMovement[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  logoUrl     String?   @map("logo_url")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  products    Product[]
+
+  @@map("brands")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Supplier {
+  id          String    @id @default(uuid())
+  name        String
+  cnpj        String?   @unique
+  email       String?
+  phone       String?
+  address     String?
+  responsible String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  products    Product[]
+  movements   StockMovement[]
+
+  @@map("suppliers")
+}
+
+model Product {
+  id             String    @id @default(uuid())
+  internalCode   String    @unique @map("internal_code")
+  barcode        String?   @unique
+  name           String
+  description    String?
+  brandId        String    @map("brand_id")
+  brand          Brand     @relation(fields: [brandId], references: [id])
+  categoryId     String    @map("category_id")
+  category       Category  @relation(fields: [categoryId], references: [id])
+  supplierId     String?   @map("supplier_id")
+  supplier       Supplier? @relation(fields: [supplierId], references: [id])
+  unit           String    @default("UN")
+  weight         Decimal?  @db.Decimal(10, 3)
+  costPrice      Decimal   @map("cost_price") @db.Decimal(10, 2)
+  salePrice      Decimal   @map("sale_price") @db.Decimal(10, 2)
+  currentStock   Int       @default(0) @map("current_stock")
+  minStock       Int       @default(0) @map("min_stock")
+  maxStock       Int?      @map("max_stock")
+  location       String?
+  expirationDate DateTime? @map("expiration_date")
+  imageUrl       String?   @map("image_url")
+  observations   String?
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  movements      StockMovement[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([supplierId])
+  @@index([name])
+  @@index([internalCode])
+  @@index([barcode])
+  @@map("products")
+}
+
+model StockMovement {
+  id             String       @id @default(uuid())
+  productId      String       @map("product_id")
+  product        Product      @relation(fields: [productId], references: [id])
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id])
+  supplierId     String?      @map("supplier_id")
+  supplier       Supplier?    @relation(fields: [supplierId], references: [id])
+  type           MovementType
+  quantity       Int
+  previousStock  Int          @map("previous_stock")
+  newStock       Int          @map("new_stock")
+  documentNumber String?      @map("document_number")
+  reason         String?
+  destination    String?
+  observations   String?
+  ipAddress      String?      @map("ip_address")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("stock_movements")
+}
