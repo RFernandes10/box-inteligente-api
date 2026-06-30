@@ -23,7 +23,7 @@ interface TokenResponse {
 
 export class AuthService {
   async login({ email, password }: LoginInput): Promise<TokenResponse> {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email, deletedAt: null },
     });
 
