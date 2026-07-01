@@ -16,7 +16,6 @@ import productsRoutes from './modules/products/products.routes';
 import stockMovementsRoutes from './modules/stock-movements/stock-movements.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import reportsRoutes from './modules/reports/reports.routes';
-import seedRoutes from './modules/seed/seed.routes';
 
 const app = express();
 
@@ -43,7 +42,6 @@ app.use('/products', productsRoutes);
 app.use('/stock-movements', stockMovementsRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/reports', reportsRoutes);
-app.use('/seed', seedRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ success: true, message: 'Box-Inteligente API está funcionando', timestamp: new Date().toISOString() });
