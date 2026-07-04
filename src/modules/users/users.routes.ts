@@ -5,11 +5,18 @@ import { requireRole } from '../../shared/middlewares/permission.middleware';
 import { validate } from '../../shared/validators';
 import { z } from 'zod';
 
+const passwordSchema = z.string()
+  .min(8, 'Senha deve ter pelo menos 8 caracteres')
+  .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+  .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+  .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
+  .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial');
+
 const createUserSchema = z.object({
   body: z.object({
     name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
     email: z.string().email('Email inválido'),
-    password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+    password: passwordSchema,
     role: z.enum(['ADMIN', 'MANAGER', 'STOCKIST']).optional(),
   }),
 });
@@ -18,7 +25,7 @@ const updateUserSchema = z.object({
   body: z.object({
     name: z.string().min(2).optional(),
     email: z.string().email().optional(),
-    password: z.string().min(6).optional(),
+    password: passwordSchema.optional(),
     role: z.enum(['ADMIN', 'MANAGER', 'STOCKIST']).optional(),
   }),
   params: z.object({

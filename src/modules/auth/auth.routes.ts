@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authController } from './auth.controller';
 import { validate } from '../../shared/validators';
 import { z } from 'zod';
@@ -22,9 +23,18 @@ const logoutSchema = z.object({
   }),
 });
 
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  keyGenerator: (req) => req.body.email || req.ip || 'unknown',
+  message: { success: false, error: 'Muitas tentativas de login. Aguarde 1 minuto.', code: 'LOGIN_RATE_LIMIT' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const router = Router();
 
-router.post('/login', validate(loginSchema), authController.login);
+router.post('/login', loginLimiter, validate(loginSchema), authController.login);
 router.post('/refresh', validate(refreshSchema), authController.refresh);
 router.post('/logout', validate(logoutSchema), authController.logout);
 

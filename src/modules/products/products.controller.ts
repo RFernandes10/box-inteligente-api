@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { productsService } from './products.service';
 import { successResponse, paginatedResponse } from '../../shared/utils/response';
+import { auditService } from '../../shared/services/audit.service';
 
 function parseProductBody(body: Record<string, unknown>) {
   const parsed: Record<string, unknown> = { ...body };
@@ -11,6 +12,18 @@ function parseProductBody(body: Record<string, unknown>) {
   if (body.maxStock !== undefined && body.maxStock !== '') parsed.maxStock = Number(body.maxStock);
   if (!body.supplierId || body.supplierId === '') parsed.supplierId = undefined;
   return parsed;
+}
+
+function sanitizeProduct(product: Record<string, unknown>, role?: string): Record<string, unknown> {
+  if (role === 'STOCKIST') {
+    const { costPrice, supplier, ...rest } = product;
+    return rest;
+  }
+  return product;
+}
+
+function sanitizeProducts(products: unknown[], role?: string): unknown[] {
+  return products.map((p) => sanitizeProduct(p as Record<string, unknown>, role));
 }
 
 export class ProductsController {
@@ -25,14 +38,14 @@ export class ProductsController {
       if (req.query.supplierId) filters.supplierId = req.query.supplierId;
       if (req.query.active !== undefined) filters.active = req.query.active === 'true';
       const result = await productsService.list(page, limit, filters);
-      return paginatedResponse(res, result.data, result.pagination);
+      return paginatedResponse(res, sanitizeProducts(result.data, req.user?.role), result.pagination);
     } catch (err) { next(err); }
   }
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const product = await productsService.getById(req.params.id as string);
-      return successResponse(res, product);
+      return successResponse(res, sanitizeProduct(product, req.user?.role));
     } catch (err) { next(err); }
   }
 
@@ -40,7 +53,7 @@ export class ProductsController {
     try {
       const q = req.query.q as string;
       const products = await productsService.search(q);
-      return successResponse(res, products);
+      return successResponse(res, sanitizeProducts(products, req.user?.role));
     } catch (err) { next(err); }
   }
 
@@ -48,6 +61,14 @@ export class ProductsController {
     try {
       const data = parseProductBody(req.body) as any;
       const product = await productsService.create(data, req.file);
+      auditService.log({
+        userId: req.user?.id,
+        action: 'PRODUCT_CREATED',
+        entity: 'Product',
+        entityId: product.id,
+        details: { name: product.name, internalCode: product.internalCode },
+        ipAddress: req.ip || (req.headers['x-forwarded-for'] as string),
+      });
       return successResponse(res, product, 'Produto criado com sucesso', 201);
     } catch (err) { next(err); }
   }
@@ -56,6 +77,13 @@ export class ProductsController {
     try {
       const data = parseProductBody(req.body) as any;
       const product = await productsService.update(req.params.id as string, data, req.file);
+      auditService.log({
+        userId: req.user?.id,
+        action: 'PRODUCT_UPDATED',
+        entity: 'Product',
+        entityId: product.id,
+        ipAddress: req.ip || (req.headers['x-forwarded-for'] as string),
+      });
       return successResponse(res, product, 'Produto atualizado com sucesso');
     } catch (err) { next(err); }
   }
@@ -64,6 +92,13 @@ export class ProductsController {
     try {
       if (!req.file) throw new Error('Imagem é obrigatória');
       const product = await productsService.updateImage(req.params.id as string, req.file);
+      auditService.log({
+        userId: req.user?.id,
+        action: 'PRODUCT_IMAGE_UPDATED',
+        entity: 'Product',
+        entityId: product.id,
+        ipAddress: req.ip || (req.headers['x-forwarded-for'] as string),
+      });
       return successResponse(res, product, 'Imagem atualizada com sucesso');
     } catch (err) { next(err); }
   }
@@ -71,6 +106,13 @@ export class ProductsController {
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       await productsService.delete(req.params.id as string);
+      auditService.log({
+        userId: req.user?.id,
+        action: 'PRODUCT_DELETED',
+        entity: 'Product',
+        entityId: req.params.id as string,
+        ipAddress: req.ip || (req.headers['x-forwarded-for'] as string),
+      });
       return successResponse(res, null, 'Produto removido com sucesso');
     } catch (err) { next(err); }
   }

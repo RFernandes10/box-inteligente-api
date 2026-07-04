@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { stockMovementsService } from './stock-movements.service';
 import { successResponse, paginatedResponse } from '../../shared/utils/response';
+import { hashIP } from '../../shared/utils/ipHash';
 
 export class StockMovementsController {
   async entry(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user!.id;
-      const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string);
+      const ipAddress = hashIP(req.ip || (req.headers['x-forwarded-for'] as string));
       const movement = await stockMovementsService.registerEntry(userId, req.body, ipAddress);
       return successResponse(res, movement, 'Entrada registrada com sucesso', 201);
     } catch (err) { next(err); }
@@ -15,7 +16,7 @@ export class StockMovementsController {
   async exit(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user!.id;
-      const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string);
+      const ipAddress = hashIP(req.ip || (req.headers['x-forwarded-for'] as string));
       const movement = await stockMovementsService.registerExit(userId, req.body, ipAddress);
       return successResponse(res, movement, 'Saída registrada com sucesso', 201);
     } catch (err) { next(err); }
