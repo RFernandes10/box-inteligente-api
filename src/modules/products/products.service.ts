@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { env } from '../../config/env';
 
-interface CreateProductInput {
+export interface CreateProductInput {
   internalCode?: string;
   barcode?: string;
   name: string;

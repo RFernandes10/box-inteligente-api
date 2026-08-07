@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../../src/config/database', () => ({
+vi.mock('@/config/database', () => ({
   prisma: {
     user: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
     },
     refreshToken: {
@@ -27,8 +28,8 @@ vi.mock('jsonwebtoken', () => ({
   },
 }));
 
-import { AuthService } from '../../src/modules/auth/auth.service';
-import { prisma } from '../../src/config/database';
+import { AuthService } from '@/modules/auth/auth.service';
+import { prisma } from '@/config/database';
 import bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
@@ -50,7 +51,7 @@ describe('AuthService', () => {
       deletedAt: null,
     };
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser as never);
     vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
     vi.mocked(prisma.refreshToken.create).mockResolvedValue({ id: '1', token: 'refresh' } as never);
 
@@ -71,7 +72,7 @@ describe('AuthService', () => {
       deletedAt: null,
     };
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser as never);
     vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
     await expect(
@@ -80,7 +81,7 @@ describe('AuthService', () => {
   });
 
   it('deve rejeitar email inexistente', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
 
     await expect(
       service.login({ email: 'nonexistent@test.com', password: 'password' })
@@ -97,7 +98,7 @@ describe('AuthService', () => {
       deletedAt: null,
     };
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser as never);
 
     await expect(
       service.login({ email: 'admin@test.com', password: 'Admin@123' })

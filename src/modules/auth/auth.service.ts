@@ -43,7 +43,7 @@ export class AuthService {
     const accessToken = jwt.sign(
       { email: user.email, role: user.role },
       env.JWT_SECRET,
-      { subject: user.id, expiresIn: env.JWT_EXPIRES_IN } as any
+      { subject: user.id, expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
     );
 
     const refreshToken = uuidv4();
@@ -97,7 +97,7 @@ export class AuthService {
     const newAccessToken = jwt.sign(
       { email: user.email, role: user.role },
       env.JWT_SECRET,
-      { subject: user.id, expiresIn: env.JWT_EXPIRES_IN } as any
+      { subject: user.id, expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
     );
 
     const newRefreshToken = uuidv4();

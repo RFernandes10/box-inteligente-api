@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { productsService } from './products.service';
+import { productsService, CreateProductInput } from './products.service';
 import { successResponse, paginatedResponse } from '../../shared/utils/response';
 import { auditService } from '../../shared/services/audit.service';
 
@@ -59,7 +59,7 @@ export class ProductsController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = parseProductBody(req.body) as any;
+      const data = parseProductBody(req.body) as unknown as CreateProductInput;
       const product = await productsService.create(data, req.file);
       auditService.log({
         userId: req.user?.id,
@@ -75,7 +75,7 @@ export class ProductsController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = parseProductBody(req.body) as any;
+      const data = parseProductBody(req.body) as unknown as CreateProductInput;
       const product = await productsService.update(req.params.id as string, data, req.file);
       auditService.log({
         userId: req.user?.id,
