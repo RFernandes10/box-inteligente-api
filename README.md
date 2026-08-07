@@ -12,7 +12,8 @@
 <p align="center"><strong>REST API — Inventory Management System</strong></p>
 <p align="center">
   <a href="https://box-inteligente-api-rf.onrender.com/health">🌐 Live API</a> &nbsp;|&nbsp;
-  <a href="https://github.com/RFernandes10/box-inteligente-web">📦 Frontend</a>
+  <a href="https://github.com/RFernandes10/box-inteligente-web">📦 Frontend</a> &nbsp;|&nbsp;
+  <a href="https://github.com/RFernandes10/box-inteligente-web#demo">🎬 Watch Demo</a>
 </p>
 
 ---
