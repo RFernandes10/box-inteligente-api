@@ -29,4 +29,8 @@ jobs:
         run: npm run build
 
       - name: Test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/box_inteligente_test
+          JWT_SECRET: ci_jwt_secret_at_least_10_chars
+          JWT_REFRESH_SECRET: ci_refresh_secret_at_least_10_chars
         run: npm test
