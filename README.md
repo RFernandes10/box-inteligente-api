@@ -1,5 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/status-production%20live-22c55e?style=for-the-badge" alt="Status">
+  <img src="https://github.com/RFernandes10/box-inteligente-api/actions/workflows/ci.yml/badge.svg" alt="CI">
   <img src="https://img.shields.io/badge/node-24.14-339933?style=for-the-badge&logo=node.js" alt="Node">
   <img src="https://img.shields.io/badge/typescript-5.6-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/express-4.21-000?style=for-the-badge&logo=express" alt="Express">
