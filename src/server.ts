@@ -48,15 +48,15 @@ app.use(limiter);
 
 app.use('/uploads', express.static(path.resolve(env.UPLOAD_PATH)));
 
-app.use('/auth', authRoutes);
-app.use('/users', usersRoutes);
-app.use('/brands', brandsRoutes);
-app.use('/categories', categoriesRoutes);
-app.use('/suppliers', suppliersRoutes);
-app.use('/products', productsRoutes);
-app.use('/stock-movements', stockMovementsRoutes);
-app.use('/dashboard', dashboardRoutes);
-app.use('/reports', reportsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/brands', brandsRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/suppliers', suppliersRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/stock-movements', stockMovementsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/reports', reportsRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ success: true, message: 'Box-Inteligente API está funcionando', timestamp: new Date().toISOString() });

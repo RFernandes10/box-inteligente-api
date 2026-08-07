@@ -35,6 +35,6 @@ router.use(authMiddleware);
 router.post('/entry', requireRole('ADMIN', 'MANAGER', 'STOCKIST'), validate(entrySchema), stockMovementsController.entry);
 router.post('/exit', requireRole('ADMIN', 'MANAGER', 'STOCKIST'), validate(exitSchema), stockMovementsController.exit);
 router.get('/', requireRole('ADMIN', 'MANAGER'), stockMovementsController.list);
-router.get('/product/:productId', stockMovementsController.listByProduct);
+router.get('/product/:productId', requireRole('ADMIN', 'MANAGER'), stockMovementsController.listByProduct);
 
 export default router;
