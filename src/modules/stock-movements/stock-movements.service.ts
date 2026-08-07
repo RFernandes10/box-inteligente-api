@@ -14,15 +14,21 @@ interface MovementInput {
 
 export class StockMovementsService {
   async registerEntry(userId: string, data: MovementInput, ipAddress?: string) {
-    const product = await prisma.product.findFirst({ where: { id: data.productId, deletedAt: null } });
-    if (!product) throw new AppError('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
-
-    if (data.quantity <= 0) throw new AppError('Quantidade deve ser maior que zero', 400, 'INVALID_QUANTITY');
-
-    const previousStock = product.currentStock;
-    const newStock = previousStock + data.quantity;
-
     const movement = await prisma.$transaction(async (tx) => {
+      if (data.quantity <= 0) {
+        throw new AppError('Quantidade deve ser maior que zero', 400, 'INVALID_QUANTITY');
+      }
+
+      const locked = await tx.$queryRaw<Array<{ current_stock: number }>>`
+        SELECT current_stock FROM products
+        WHERE id = ${data.productId} AND deleted_at IS NULL
+        FOR UPDATE
+      `;
+      if (!locked.length) throw new AppError('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
+
+      const previousStock = locked[0].current_stock;
+      const newStock = previousStock + data.quantity;
+
       const mov = await tx.stockMovement.create({
         data: {
           productId: data.productId,
@@ -57,19 +63,27 @@ export class StockMovementsService {
   }
 
   async registerExit(userId: string, data: MovementInput, ipAddress?: string) {
-    const product = await prisma.product.findFirst({ where: { id: data.productId, deletedAt: null } });
-    if (!product) throw new AppError('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
-
-    if (data.quantity <= 0) throw new AppError('Quantidade deve ser maior que zero', 400, 'INVALID_QUANTITY');
-
-    if (product.currentStock < data.quantity) {
-      throw new AppError('Estoque insuficiente para realizar esta saída', 400, 'INSUFFICIENT_STOCK');
-    }
-
-    const previousStock = product.currentStock;
-    const newStock = previousStock - data.quantity;
-
     const movement = await prisma.$transaction(async (tx) => {
+      if (data.quantity <= 0) {
+        throw new AppError('Quantidade deve ser maior que zero', 400, 'INVALID_QUANTITY');
+      }
+
+      const locked = await tx.$queryRaw<Array<{ current_stock: number }>>`
+        SELECT current_stock FROM products
+        WHERE id = ${data.productId} AND deleted_at IS NULL
+        FOR UPDATE
+      `;
+      if (!locked.length) {
+        throw new AppError('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
+      }
+
+      if (locked[0].current_stock < data.quantity) {
+        throw new AppError('Estoque insuficiente para realizar esta saída', 400, 'INSUFFICIENT_STOCK');
+      }
+
+      const previousStock = locked[0].current_stock;
+      const newStock = previousStock - data.quantity;
+
       const mov = await tx.stockMovement.create({
         data: {
           productId: data.productId,
