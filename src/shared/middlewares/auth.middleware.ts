@@ -10,6 +10,8 @@ interface TokenPayload {
 }
 
 declare global {
+  // Augmentação de tipo do Express exige namespace
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: {

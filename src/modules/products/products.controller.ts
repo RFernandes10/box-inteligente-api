@@ -16,7 +16,7 @@ function parseProductBody(body: Record<string, unknown>) {
 
 function sanitizeProduct(product: Record<string, unknown>, role?: string): Record<string, unknown> {
   if (role === 'STOCKIST') {
-    const { costPrice, supplier, ...rest } = product;
+    const { costPrice: _costPrice, supplier: _supplier, ...rest } = product;
     return rest;
   }
   return product;

@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env';
 import { AppError } from '../errors/AppError';
@@ -51,7 +52,7 @@ const uploadMiddleware = multer({
   },
 });
 
-function validateUploadedFile(req: Express.Request, _res: Express.Response, next: Function) {
+function validateUploadedFile(req: Express.Request, _res: Express.Response, next: NextFunction) {
   if (req.file) {
     const filePath = path.resolve(env.UPLOAD_PATH, 'products', req.file.filename);
     if (!validateMagicBytes(filePath, req.file.mimetype)) {
