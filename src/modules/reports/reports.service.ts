@@ -138,8 +138,13 @@ export class ReportsService {
   generateCSV(data: Record<string, unknown>[]): string {
     if (data.length === 0) return '';
     const headers = Object.keys(data[0]);
-    const rows = data.map((row) => headers.map((h) => `"${String(row[h] ?? '')}"`).join(','));
-    return [headers.join(','), ...rows].join('\n');
+    const csvCell = (value: unknown): string => {
+      let s = value == null ? '' : String(value);
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+    const rows = data.map((row) => headers.map((h) => csvCell(row[h])).join(','));
+    return [headers.map(csvCell).join(','), ...rows].join('\n');
   }
 }
 
