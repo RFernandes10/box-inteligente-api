@@ -6,22 +6,20 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando seeds...');
 
-  const adminExists = await prisma.user.findUnique({
-    where: { email: 'admin@casadobiscoito.com.br' },
+  const adminEmail = 'admin@casadobiscoito.com.br';
+  const passwordHash = await bcrypt.hash('Admin@123', 12);
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: { mustChangePassword: true },
+    create: {
+      name: 'Administrador',
+      email: adminEmail,
+      passwordHash,
+      role: UserRole.ADMIN,
+      mustChangePassword: true,
+    },
   });
-
-  if (!adminExists) {
-    const passwordHash = await bcrypt.hash('Admin@123', 12);
-    await prisma.user.create({
-      data: {
-        name: 'Administrador',
-        email: 'admin@casadobiscoito.com.br',
-        passwordHash,
-        role: UserRole.ADMIN,
-      },
-    });
-    console.log('✅ Usuário admin criado');
-  }
+  console.log('✅ Usuário admin garantido com troca de senha obrigatória');
 
   const categories = [
     'Biscoitos',

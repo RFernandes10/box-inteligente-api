@@ -5,3 +5,5 @@ uploads/products/*
 !uploads/products/.gitkeep
 logs/
 *.log
+server-err.txt
+server-out.txt

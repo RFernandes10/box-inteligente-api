@@ -2,20 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 import { env } from './config/env';
 import { errorMiddleware } from './shared/middlewares/error.middleware';
 import { logger } from './shared/utils/logger';
 
-import authRoutes from './modules/auth/auth.routes';
-import usersRoutes from './modules/users/users.routes';
-import brandsRoutes from './modules/brands/brands.routes';
-import categoriesRoutes from './modules/categories/categories.routes';
-import suppliersRoutes from './modules/suppliers/suppliers.routes';
-import productsRoutes from './modules/products/products.routes';
-import stockMovementsRoutes from './modules/stock-movements/stock-movements.routes';
-import dashboardRoutes from './modules/dashboard/dashboard.routes';
-import reportsRoutes from './modules/reports/reports.routes';
+import { routes } from './container';
 
 const app = express();
 
@@ -38,6 +31,7 @@ app.use(helmet({
 app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -48,15 +42,15 @@ app.use(limiter);
 
 app.use('/uploads', express.static(path.resolve(env.UPLOAD_PATH)));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/brands', brandsRoutes);
-app.use('/api/categories', categoriesRoutes);
-app.use('/api/suppliers', suppliersRoutes);
-app.use('/api/products', productsRoutes);
-app.use('/api/stock-movements', stockMovementsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/reports', reportsRoutes);
+app.use('/api/auth', routes.auth);
+app.use('/api/users', routes.users);
+app.use('/api/brands', routes.brands);
+app.use('/api/categories', routes.categories);
+app.use('/api/suppliers', routes.suppliers);
+app.use('/api/products', routes.products);
+app.use('/api/stock-movements', routes.stockMovements);
+app.use('/api/dashboard', routes.dashboard);
+app.use('/api/reports', routes.reports);
 
 app.get('/health', (_req, res) => {
   res.json({ success: true, message: 'Box-Inteligente API está funcionando', timestamp: new Date().toISOString() });
